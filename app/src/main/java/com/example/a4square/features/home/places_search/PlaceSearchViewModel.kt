@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.domain.entity.result.PlaceSearchResult
 import com.example.domain.repository.PlacesRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -29,8 +30,6 @@ class PlaceSearchViewModel @Inject constructor(
     private val _searchText: MutableStateFlow<String> =
         MutableStateFlow("")
     val searchText: StateFlow<String> = _searchText
-//    private val searchTextState
-//        get() = _searchText.value
 
     private val _searchResult: MutableStateFlow<PlacesListState> =
         MutableStateFlow(PlacesListState.empty())
@@ -40,27 +39,35 @@ class PlaceSearchViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = PlacesListState.empty()
         )
-//    private val searchResultState
-//        get() = _searchResult.value
 
     init {
         @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
         _searchText.debounce(300)
             .distinctUntilChanged()
             .flatMapLatest { query ->
-                if (query.isNotBlank() && query.length > 2)
+                if (query.isNotBlank() && query.length >= 3)
                     placesRepository.searchPlace(query = query)
                 else flowOf(PlaceSearchResult.PlaceSearchSuccess.empty())
             }.onEach {
-                reducePlaceResult(it)
+                reduceFirstPageResult(it)
             }
             .launchIn(
                 scope = viewModelScope,
             )
+
+//        viewModelScope.launch {
+//            observeCachedAuthorUseCase.observeAuthor(authorId = authorId).collect {
+//                reduce(it)
+//            }
+//        }
     }
 
-    private fun reducePlaceResult(data: PlaceSearchResult) {
-        _searchResult.value = data.reduce(currentState = _searchResult.value)
+    private fun reduceFirstPageResult(data: PlaceSearchResult) {
+        _searchResult.value = data.reduceFirstPage(currentState = _searchResult.value)
+    }
+
+    private fun reduceNextPageResult(data: PlaceSearchResult) {
+        _searchResult.value = data.reduceNextPage(currentState = _searchResult.value)
     }
 
     fun loadNextPage() {
@@ -71,21 +78,21 @@ class PlaceSearchViewModel @Inject constructor(
                 query = searchResult.value.toString(),
                 pageCursor = nextPageCursor
             ).onEach {
-                reducePlaceResult(it)
+                reduceNextPageResult(it)
             }.launchIn(viewModelScope)
         }
-//        if (_searchResult.value.nextPageCursor == null) return
-//
-//        placesRepository.searchPlace(
-//            query = searchResult.value.toString(),
-//            pageCursor = nextPageCursor
-//        ).onEach {
-//            reducePlaceResult(it)
-//        }.launchIn(viewModelScope)
     }
 
     fun onQueryChangedEvent(query: String) {
-        _searchText.value = query
+        _searchText.value = query.trim()
+    }
+
+    fun onChangePlaceFavouriteStatus(placeId: String) {
+        placesRepository.changePlaceFavouriteStatus(
+            placeId
+        ).onEach {
+            //show message if failed
+        }.launchIn(viewModelScope)
     }
 
     fun onRetry() {
@@ -93,40 +100,44 @@ class PlaceSearchViewModel @Inject constructor(
             query = searchResult.value.toString(),
             pageCursor = _searchResult.value.nextPageCursor
         ).onEach {
-            reducePlaceResult(it)
-//            when (it) {
-//                is PlaceSearchResult.PlaceSearchFailed -> _searchResult.value =
-//                    PlacesListState.PlacesListStateFailed(
-//                        places = _searchResult.value.places,
-//                        error = it.error
-//                    )
-//
-//                PlaceSearchResult.PlaceSearchLoading -> _searchResult.value =
-//                    PlacesListState.PlacesListStateLoading(
-//                        places = _searchResult.value.places,
-//                    )
-//
-//                is PlaceSearchResult.PlaceSearchSuccess -> {
-//                    nextPageCursor = it.page.nextPageCursor
-//
-//                    if (nextPageCursor != null) {
-//                        _searchResult.value = PlacesListState.PlacesListStateLoading(
-//                            places = _searchResult.value.places.plus(it.page.places)
-//                                .toImmutableList(),
-//                        )
-//                    } else {
-//                        _searchResult.value = PlacesListState.PlacesListStateLoaded(
-//                            places = _searchResult.value.places.plus(it.page.places)
-//                                .toImmutableList(),
-//                        )
-//                    }
-//                }
-//            }
+            if (searchResult.value.nextPageCursor == null) reduceFirstPageResult(it)
+            else reduceNextPageResult(it)
         }.launchIn(viewModelScope)
     }
 }
 
-private fun PlaceSearchResult.reduce(currentState: PlacesListState): PlacesListState {
+private fun PlaceSearchResult.reduceFirstPage(currentState: PlacesListState): PlacesListState {
+    return when (this) {
+        is PlaceSearchResult.PlaceSearchFailed -> PlacesListState.PlacesListStateFailed(
+            places = persistentListOf(),
+            nextPageCursor = null,
+            error = this.error
+        )
+
+        PlaceSearchResult.PlaceSearchLoading -> PlacesListState.PlacesListStateLoading(
+            places = persistentListOf(),
+            nextPageCursor = null,
+        )
+
+        is PlaceSearchResult.PlaceSearchSuccess -> {
+//            if (this.page.nextPageCursor != null) {
+//                PlacesListState.PlacesListStateLoading(
+//                    places = currentState.places.plus(this.page.places)
+//                        .toImmutableList(),
+//                    nextPageCursor = this.page.nextPageCursor
+//                )
+//            } else {
+            PlacesListState.PlacesListStateLoaded(
+                places = currentState.places.plus(this.page.places)
+                    .toImmutableList(),
+                nextPageCursor = this.page.nextPageCursor
+            )
+//            }
+        }
+    }
+}
+
+private fun PlaceSearchResult.reduceNextPage(currentState: PlacesListState): PlacesListState {
     return when (this) {
         is PlaceSearchResult.PlaceSearchFailed -> PlacesListState.PlacesListStateFailed(
             places = currentState.places,
@@ -135,24 +146,22 @@ private fun PlaceSearchResult.reduce(currentState: PlacesListState): PlacesListS
         )
 
         PlaceSearchResult.PlaceSearchLoading -> PlacesListState.PlacesListStateLoading(
-            places = currentState.places,
-            nextPageCursor = currentState.nextPageCursor
+            places = currentState.places, nextPageCursor = currentState.nextPageCursor
         )
 
         is PlaceSearchResult.PlaceSearchSuccess -> {
-            if (this.page.nextPageCursor != null) {
-                PlacesListState.PlacesListStateLoading(
-                    places = currentState.places.plus(this.page.places)
-                        .toImmutableList(),
-                    nextPageCursor = this.page.nextPageCursor
-                )
-            } else {
-                PlacesListState.PlacesListStateLoaded(
-                    places = currentState.places.plus(this.page.places)
-                        .toImmutableList(),
-                    nextPageCursor = this.page.nextPageCursor
-                )
-            }
+//            if (this.page.nextPageCursor != null) {
+//                PlacesListState.PlacesListStateLoading(
+//                    places = currentState.places.plus(this.page.places)
+//                        .toImmutableList(),
+//                    nextPageCursor = this.page.nextPageCursor
+//                )
+//            } else {
+            PlacesListState.PlacesListStateLoaded(
+                places = currentState.places.plus(this.page.places).toImmutableList(),
+                nextPageCursor = this.page.nextPageCursor
+            )
+//            }
         }
     }
 }

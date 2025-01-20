@@ -2,55 +2,37 @@ package com.example.data.local.dao
 
 import androidx.room.Dao
 import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
+import com.example.data.local.model.FavouritePlaceIdLocal
+import com.example.data.local.model.PlaceIdLocal
 import com.example.data.local.model.PlaceLocal
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface PlaceDao {
 
-    @Insert
-    suspend fun insert(places: PlaceLocal)
+    //favourites
+    @Query("SELECT * from ${PlaceLocal.ENTITY_NAME} as Place INNER JOIN ${FavouritePlaceIdLocal.ENTITY_NAME} AS FavouriteId ON Place.id = FavouriteId.fav_id")
+    fun observeAllFavouritePlaces(): Flow<List<PlaceLocal>>
 
-//    @Insert(onConflict = OnConflictStrategy.REPLACE)
-//    abstract suspend fun _insertPages(pages: List<PageLocal>)
-//
-//    @Transaction
-//    open suspend fun insert(value: List<PopulatedPageLocal>) {
-//        _insertMovies(value.flatMap { it.movies })
-//        _insertPages(value.map { it.page })
-//    }
-//
-//    @Query("DELETE FROM ${PageLocal.ENTITY_NAME} WHERE ${PageLocal.ORDINAL} = :pageOrdinal")
-//    abstract suspend fun _deletePage(pageOrdinal: Int)
-//
-//    @Query("DELETE FROM ${MovieLocal.ENTITY_NAME} WHERE ${MovieLocal.ID} = :pageOrdinal")
-//    abstract suspend fun _deleteMoviesForPage(pageOrdinal: Int)
-//
-//    @Transaction
-//    open suspend fun deletePage(pageOrdinal: Int) {
-//        _deleteMoviesForPage(pageOrdinal)
-//        _deletePage(pageOrdinal)
-//    }
-//
-//    @Query("SELECT ${PageLocal.ORDINAL} FROM ${PageLocal.ENTITY_NAME} WHERE ${PageLocal.ORDINAL} >= :fromInclusive AND ${PageLocal.ORDINAL} < :toExclusive")
-//    abstract suspend fun getCachedRangeWithinLimits(
-//        fromInclusive: Int,
-//        toExclusive: Int
-//    ): List<Int>
-//
-//    /**
-//     * cant use "between" since its both limits are inclusive
-//     */
-//    @Transaction
-//    @Query("SELECT * FROM ${PageLocal.ENTITY_NAME} WHERE ${PageLocal.ORDINAL} >= :fromInclusive AND ${PageLocal.ORDINAL} < :toExclusive")
-//    abstract fun observeCachedPages(
-//        fromInclusive: Int,
-//        toExclusive: Int
-//    ): Flow<List<PopulatedPageLocal>>
-//
-//    @Transaction
-//    @Query("SELECT * FROM ${PageLocal.ENTITY_NAME} WHERE ${PageLocal.ORDINAL} >= :fromInclusive AND ${PageLocal.ORDINAL} < :toExclusive")
-//    abstract fun getCachedPages(
-//        fromInclusive: Int,
-//        toExclusive: Int
-//    ): List<PopulatedPageLocal>
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertFavouriteId(placeId: FavouritePlaceIdLocal)
+
+    @Query("DELETE FROM ${FavouritePlaceIdLocal.ENTITY_NAME} WHERE ${FavouritePlaceIdLocal.ID}=:placeId")
+    suspend fun deleteFavouriteId(placeId: String)
+
+    //search index
+    @Query("SELECT * from ${PlaceIdLocal.ENTITY_NAME} AS SearchPlaceIdex INNER JOIN ${PlaceLocal.ENTITY_NAME} as PlaceCache ON SearchPlaceIdex.id = PlaceCache.id LEFT JOIN ${FavouritePlaceIdLocal.ENTITY_NAME} AS FavouritePlaceIdex ON SearchPlaceIdex.id = FavouritePlaceIdex.fav_id")
+    fun observeSearchIndex(): Flow<List<PlaceLocal>>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertSearchIndexPlaceId(places: List<PlaceLocal>)
+
+    @Query("DELETE FROM ${PlaceLocal.ENTITY_NAME}")
+    suspend fun clearSearchIndex()
+
+    //places cache
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertPlaces(places: List<PlaceLocal>)
 }

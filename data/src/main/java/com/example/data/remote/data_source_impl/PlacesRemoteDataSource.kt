@@ -34,7 +34,7 @@ class PlacesRemoteDataSourceImpl @Inject constructor(private val client: HttpCli
                     url {
                         pageCursor?.let { parameters.append(CURSOR_PARAM_KEY, it) }
                         parameters.append(LIMIT_PARAM_KEY, DEFAULT_PAGE_SIZE.toString())
-                        parameters.append(QUERY_PARAM_KEY, "bel")
+                        parameters.append(QUERY_PARAM_KEY, query)
                     }
                 }
 

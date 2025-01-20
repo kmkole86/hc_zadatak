@@ -4,6 +4,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
+//cached table where all fetched places are stored
 @Entity(tableName = PlaceLocal.ENTITY_NAME)
 data class PlaceLocal(
     @PrimaryKey @ColumnInfo(name = ID) val id: String,
@@ -12,7 +13,7 @@ data class PlaceLocal(
 ) {
 
     companion object {
-        const val ENTITY_NAME = "places_local"
+        const val ENTITY_NAME = "places_cache_table"
         const val ID = "id"
         const val NAME = "name"
         const val DISTANCE = "distance"

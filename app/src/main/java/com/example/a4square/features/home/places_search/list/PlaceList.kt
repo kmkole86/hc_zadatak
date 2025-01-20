@@ -1,6 +1,7 @@
 package com.example.a4square.features.home.places_search.list
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -32,7 +33,10 @@ import com.example.domain.entity.Place
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PlaceListItem(
-    place: Place, onPlaceClicked: (String) -> Unit, modifier: Modifier = Modifier
+    place: Place,
+    onPlaceClicked: (String) -> Unit,
+    onFavouriteClicked: (String) -> Unit,
+    modifier: Modifier = Modifier
 ) {
     Card(
         modifier = Modifier
@@ -50,17 +54,19 @@ fun PlaceListItem(
             defaultElevation = 10.dp
         )
     ) {
-        Text(
-            modifier = modifier
-                .fillMaxWidth()
-                .padding(all = 16.dp),
-            text = place.name,
-            textAlign = TextAlign.Center,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            style = MaterialTheme.typography.bodyLarge,
-            fontWeight = FontWeight.Bold
-        )
+        Row(modifier = modifier) {
+            Text(
+                modifier = modifier
+                    .fillMaxWidth()
+                    .padding(all = 16.dp),
+                text = place.name,
+                textAlign = TextAlign.Center,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.Bold
+            )
+        }
     }
 }
 

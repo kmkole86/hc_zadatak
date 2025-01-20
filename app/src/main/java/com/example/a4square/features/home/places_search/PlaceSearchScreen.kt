@@ -64,6 +64,7 @@ fun PlaceSearchScreen(
                         PlaceListItem(
                             place = searchResult.places[index],
                             onPlaceClicked = onPlaceClicked,
+                            onFavouriteClicked = viewModel::onChangePlaceFavouriteStatus,
                             modifier = modifier
                         )
                     })
@@ -94,16 +95,16 @@ fun PlaceSearchScreen(
                     }
 
                     is PlacesListState.PlacesListStateLoaded -> {
-                        if (!searchResult.hasNextPage) {
-                            if (searchResult.places.isEmpty())
-                                item {
-                                    //TODO ADD KEY
-                                    PlaceListInfoItem(
-                                        message = "No result",
-                                        modifier = modifier
-                                    )
-                                }
-                            else item {
+                        if (searchResult.places.isEmpty()) {
+                            item {
+                                //TODO ADD KEY
+                                PlaceListInfoItem(
+                                    message = "No result",
+                                    modifier = modifier
+                                )
+                            }
+                        } else if (searchResult.hasNextPage) {
+                            item {
                                 //TODO ADD KEY
                                 PlaceListLoadingItem(modifier = modifier)
                             }
