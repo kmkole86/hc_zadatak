@@ -39,9 +39,10 @@ class PlacesRemoteDataSourceImpl @Inject constructor(private val client: HttpCli
                 }
 
                 val cursorValue = result.headers.parseNextPageCursorOrNull()
+                val places = result.body<PlacesSearchResponse>().results
 
                 PlacePageResponse(
-                    places = result.body<PlacesSearchResponse>().results,
+                    places = places,
                     nextPageCursor = cursorValue
                 )
             }

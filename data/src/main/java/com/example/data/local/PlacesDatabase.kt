@@ -3,19 +3,19 @@ package com.example.data.local
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import com.example.data.local.dao.PlaceDao
-import com.example.data.local.model.FavouritePlaceIdLocal
-import com.example.data.local.model.PlaceIdLocal
-import com.example.data.local.model.PlaceLocal
-import com.example.data.local.model.PlaceLocalWithFavourite
+import com.example.data.local.model.FavouritePlaceIdDb
+import com.example.data.local.model.PlaceDbSearchIndex
+import com.example.data.local.model.PlaceDb
+import com.example.data.local.model.PlaceDbWithFavourite
 
 @Database(
     version = 1,
     exportSchema = false,
     entities = [
-        PlaceLocal::class,
-        PlaceIdLocal::class,
-        FavouritePlaceIdLocal::class,
-        PlaceLocalWithFavourite::class
+        PlaceDb::class,
+        PlaceDbSearchIndex::class,
+        FavouritePlaceIdDb::class,
+        PlaceDbWithFavourite::class
     ]
 )
 abstract class PlacesDatabase : RoomDatabase() {

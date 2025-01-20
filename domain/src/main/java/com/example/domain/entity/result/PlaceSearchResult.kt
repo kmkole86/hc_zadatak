@@ -1,18 +1,34 @@
 package com.example.domain.entity.result
 
-import com.example.domain.entity.PlacePage
+import com.example.domain.entity.Place
 
 //TODO make to ListResult using <T, E>
 sealed class PlaceSearchResult {
-    object PlaceSearchLoading : PlaceSearchResult()
-    data class PlaceSearchSuccess(val page: PlacePage) :
+
+    abstract val places: List<Place>
+    abstract val nextPageCursor: String?
+
+    data class PlaceSearchLoading(
+        override val places: List<Place>,
+        override val nextPageCursor: String?
+    ) : PlaceSearchResult()
+
+    data class PlaceSearchSuccess(
+        override val places: List<Place>,
+        override val nextPageCursor: String?
+    ) :
         PlaceSearchResult() {
         companion object {
-            fun empty(): PlaceSearchSuccess = PlaceSearchSuccess(page = PlacePage.empty())
+            fun empty(): PlaceSearchSuccess =
+                PlaceSearchSuccess(places = listOf(), nextPageCursor = null)
         }
     }
 
-    data class PlaceSearchFailed(val error: PlaceSearchError) : PlaceSearchResult()
+    data class PlaceSearchFailed(
+        override val places: List<Place>,
+        override val nextPageCursor: String?,
+        val error: PlaceSearchError,
+    ) : PlaceSearchResult()
 }
 
 sealed class PlaceSearchError {

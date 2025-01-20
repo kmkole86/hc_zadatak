@@ -4,14 +4,14 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
-//index table for favourite places
-@Entity(tableName = FavouritePlaceIdLocal.ENTITY_NAME)
-data class FavouritePlaceIdLocal(
+//current search index table
+@Entity(tableName = PlaceDbSearchIndex.ENTITY_NAME)
+data class PlaceDbSearchIndex(
     @PrimaryKey @ColumnInfo(name = ID) val id: String,
 ) {
 
     companion object {
-        const val ENTITY_NAME = "favourite_local"
-        const val ID = "fav_id"
+        const val ENTITY_NAME = "search_index_table"
+        const val ID = "id"
     }
 }

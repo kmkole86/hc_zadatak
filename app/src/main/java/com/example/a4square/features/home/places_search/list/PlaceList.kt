@@ -8,10 +8,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Favorite
+import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -20,6 +25,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.text.font.FontWeight
@@ -40,32 +46,38 @@ fun PlaceListItem(
 ) {
     Card(
         modifier = Modifier
-            .padding(
-                vertical = dimensionResource(id = R.dimen.spacing_1x),
-                horizontal = dimensionResource(id = R.dimen.spacing_2x)
-            )
             .fillMaxWidth()
             .height(dimensionResource(id = R.dimen.spacing_12x)),
         onClick = {
             onPlaceClicked(place.id)
         },
-        shape = RoundedCornerShape(corner = CornerSize(16.dp)),
+        shape = RoundedCornerShape(corner = CornerSize(dimensionResource(id = R.dimen.spacing_2x))),
         elevation = CardDefaults.cardElevation(
             defaultElevation = 10.dp
         )
     ) {
-        Row(modifier = modifier) {
+        Row(
+            modifier = modifier.padding(all = dimensionResource(id = R.dimen.spacing_1x)),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
             Text(
-                modifier = modifier
-                    .fillMaxWidth()
-                    .padding(all = 16.dp),
+                modifier = modifier.weight(1f),
                 text = place.name,
                 textAlign = TextAlign.Center,
-                maxLines = 1,
+                maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.Bold
             )
+            IconButton(
+                onClick = { onFavouriteClicked(place.id) },
+                modifier
+            ) {
+                Icon(
+                    if (place.isFavourite) Icons.Outlined.Favorite else Icons.Outlined.FavoriteBorder,
+                    "Favourite"
+                )
+            }
         }
     }
 }

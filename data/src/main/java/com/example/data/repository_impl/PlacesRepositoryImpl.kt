@@ -1,10 +1,11 @@
 package com.example.data.repository_impl
 
+import com.example.data.common.mapToDomain
+import com.example.data.common.mapToLocal
 import com.example.data.local.data_source_impl.PlacesLocalDataSource
+import com.example.data.model.PlaceLocalWithFavourite
+import com.example.data.model.PlaceSearchLocalResult
 import com.example.data.remote.data_source_impl.PlacesRemoteDataSource
-import com.example.data.remote.model.PlaceResponse
-import com.example.domain.entity.Place
-import com.example.domain.entity.PlacePage
 import com.example.domain.entity.result.FavouriteStatusResult
 import com.example.domain.entity.result.PlaceResult
 import com.example.domain.entity.result.PlaceSearchError
@@ -12,6 +13,7 @@ import com.example.domain.entity.result.PlaceSearchResult
 import com.example.domain.repository.PlacesRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.onStart
@@ -29,39 +31,66 @@ class PlacesRepositoryImpl(
         }
     }.onStart { emit(PlaceResult.PlaceLoading) }.flowOn(dispatcher)
 
-    override fun searchPlace(query: String, pageCursor: String?): Flow<PlaceSearchResult> =
-        flow<PlaceSearchResult> {
-
-            val result = remoteDataSource.searchPlace(query = query, pageCursor = pageCursor)
-
-            //proveri za favourites
-            result.onSuccess {
-                emit(
-                    PlaceSearchResult.PlaceSearchSuccess(
-                        page = PlacePage(
-                            places = it.places.map { place -> place.mapToPlace() },
-                            nextPageCursor = it.nextPageCursor
-                        )
-                    )
-                )
-            }.onFailure {
-                emit(
+    override fun searchPlace(query: String, pageCursor: String?): Flow<PlaceSearchResult> {
+        return combine<PlaceSearchLocalResult, List<PlaceLocalWithFavourite>, PlaceSearchResult>(
+            flow = searchPlaceApi(query = query, pageCursor = pageCursor),
+            flow2 = localDatasource.observeSearchIndex()
+        ) { apiResult, searchIndex: List<PlaceLocalWithFavourite> ->
+            when (apiResult) {
+                is PlaceSearchLocalResult.PlaceSearchFailed -> {
                     PlaceSearchResult.PlaceSearchFailed(
-                        error = PlaceSearchError.GenericError
+                        places = searchIndex.map { it.mapToDomain() },
+                        nextPageCursor = pageCursor, error = apiResult.error
                     )
-                )
+                }
+
+                PlaceSearchLocalResult.PlaceSearchLoading -> {
+                    PlaceSearchResult.PlaceSearchLoading(
+                        places = searchIndex.map { it.mapToDomain() },
+                        nextPageCursor = pageCursor,
+                    )
+                }
+
+                is PlaceSearchLocalResult.PlaceSearchSuccess -> {
+                    PlaceSearchResult.PlaceSearchSuccess(
+                        places = searchIndex.map { it.mapToDomain() },
+                        nextPageCursor = apiResult.nextPageCursor
+                    )
+                }
             }
-        }.onStart { emit(PlaceSearchResult.PlaceSearchLoading) }.flowOn(dispatcher)
+        }
+    }
 
     override fun changePlaceFavouriteStatus(placeId: String): Flow<FavouriteStatusResult> =
         flow<FavouriteStatusResult> {
-            try {
-
-            } catch (e: Exception) {
-
-            }
+            emit(
+                FavouriteStatusResult.FavouriteStatusSuccess(
+                    localDatasource.changeFavouriteStatus(
+                        placeId
+                    )
+                )
+            )
         }.onStart { emit(FavouriteStatusResult.FavouriteStatusLoading) }.flowOn(dispatcher)
-}
 
-fun PlaceResponse.mapToPlace() =
-    Place(id = id, distance = distance, name = name, isFavourite = false)
+    private fun searchPlaceApi(query: String, pageCursor: String?) = flow<PlaceSearchLocalResult> {
+        if (pageCursor == null) localDatasource.clearSearchIndex()
+        remoteDataSource.searchPlace(query = query, pageCursor = pageCursor).onSuccess {
+            with(it) {
+                localDatasource.cacheSearchResult(places.map { it.mapToLocal() })
+                localDatasource.updateSearchIndex(places.map { it.mapToLocal() })
+            }
+            emit(
+                PlaceSearchLocalResult.PlaceSearchSuccess(
+                    places = it.places.map { place -> place.mapToLocal() },
+                    nextPageCursor = it.nextPageCursor
+                )
+            )
+        }.onFailure {
+            emit(
+                PlaceSearchLocalResult.PlaceSearchFailed(
+                    error = PlaceSearchError.GenericError
+                )
+            )
+        }
+    }.onStart { emit(PlaceSearchLocalResult.PlaceSearchLoading) }.flowOn(dispatcher)
+}

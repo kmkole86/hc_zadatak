@@ -16,6 +16,9 @@ sealed class PlacesListState {
     val hasNextPage: Boolean
         get() = nextPageCursor != null
 
+    val isLoadingNextPage: Boolean
+        get() = this is PlacesListStateLoading
+
     abstract val places: ImmutableList<Place>
     abstract val nextPageCursor: String?
 

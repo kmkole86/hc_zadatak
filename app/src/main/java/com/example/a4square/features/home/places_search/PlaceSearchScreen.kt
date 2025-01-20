@@ -1,5 +1,6 @@
 package com.example.a4square.features.home.places_search
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -28,7 +29,7 @@ fun PlaceSearchScreen(
     viewModel: PlaceSearchViewModel = hiltViewModel(),
 ) {
     val lazyListState = rememberLazyListState()
-    val searchText by viewModel.searchText.collectAsStateWithLifecycle()
+    val query by viewModel.searchText.collectAsStateWithLifecycle()
     val searchResult by viewModel.searchResult.collectAsStateWithLifecycle()
 
     lazyListState.OnBottomReached {
@@ -40,12 +41,12 @@ fun PlaceSearchScreen(
             .padding(16.dp)
     ) {
         OutlinedTextField(
-            value = searchText,
+            value = query.searchText,
             onValueChange = viewModel::onQueryChangedEvent,
             modifier = modifier.fillMaxWidth()
         )
         Spacer(modifier = Modifier.height(16.dp))
-        if (searchText.length < 3)
+        if (query.searchText.length < 3)
             PlaceListInfoItem(
                 message = "Type 3 or more chars to start search...",
                 modifier = modifier
@@ -54,7 +55,7 @@ fun PlaceSearchScreen(
             LazyColumn(
                 state = lazyListState, modifier = modifier
                     .fillMaxSize()
-                    .weight(1f)
+                    .weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 //show place result items if any
                 items(
@@ -79,14 +80,12 @@ fun PlaceSearchScreen(
                 when (searchResult) {
                     is PlacesListState.PlacesListStateLoading -> {
                         item {
-                            //TODO ADD KEY
                             PlaceListLoadingItem(modifier = modifier)
                         }
                     }
 
                     is PlacesListState.PlacesListStateFailed -> {
                         item {
-                            //TODO ADD KEY
                             PlaceListErrorItem(
                                 onRetryClicked = viewModel::onRetry,
                                 modifier = modifier
@@ -97,7 +96,6 @@ fun PlaceSearchScreen(
                     is PlacesListState.PlacesListStateLoaded -> {
                         if (searchResult.places.isEmpty()) {
                             item {
-                                //TODO ADD KEY
                                 PlaceListInfoItem(
                                     message = "No result",
                                     modifier = modifier
@@ -105,7 +103,6 @@ fun PlaceSearchScreen(
                             }
                         } else if (searchResult.hasNextPage) {
                             item {
-                                //TODO ADD KEY
                                 PlaceListLoadingItem(modifier = modifier)
                             }
                         }
