@@ -2,6 +2,8 @@ package com.example.a4square.features.home.places_search.list
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -33,10 +35,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
+import com.bumptech.glide.integration.compose.GlideImage
 import com.example.a4square.R
 import com.example.domain.entity.Place
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalGlideComposeApi::class)
 @Composable
 fun PlaceListItem(
     place: Place,
@@ -60,6 +64,18 @@ fun PlaceListItem(
             modifier = modifier.padding(all = dimensionResource(id = R.dimen.spacing_1x)),
             verticalAlignment = Alignment.CenterVertically,
         ) {
+            GlideImage(
+                model = place.iconUrl,
+                contentDescription = "icon",
+                modifier = modifier
+                    .aspectRatio(ratio = 1f)
+                    .fillMaxHeight(),
+            ) {
+                it
+                    .error(R.drawable.error)
+                    .placeholder(R.drawable.image)
+                    .load(place.iconUrl)
+            }
             Text(
                 modifier = modifier.weight(1f),
                 text = place.name,
@@ -102,7 +118,6 @@ fun PlaceListInfoItem(message: String, modifier: Modifier = Modifier) {
 fun PlaceListLoadingItem(modifier: Modifier = Modifier) {
     Card(
         modifier = Modifier
-            .padding(vertical = 16.dp, horizontal = 16.dp)
             .fillMaxWidth(),
         shape = RoundedCornerShape(corner = CornerSize(16.dp)),
         elevation = CardDefaults.cardElevation(
@@ -135,7 +150,6 @@ fun PlaceListErrorItem(
 ) {
     Card(
         modifier = Modifier
-            .padding(vertical = 16.dp, horizontal = 16.dp)
             .fillMaxWidth(),
         shape = RoundedCornerShape(corner = CornerSize(16.dp)),
         elevation = CardDefaults.cardElevation(

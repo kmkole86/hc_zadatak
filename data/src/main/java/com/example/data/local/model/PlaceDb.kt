@@ -10,6 +10,7 @@ data class PlaceDb(
     @PrimaryKey @ColumnInfo(name = ID) val id: String,
     @ColumnInfo(name = NAME) val name: String,
     @ColumnInfo(name = DISTANCE) val distance: Int,
+    @ColumnInfo(name = ICON_URL) val iconUrl: String?,
 ) {
 
     companion object {
@@ -17,5 +18,6 @@ data class PlaceDb(
         const val ID = "id"
         const val NAME = "name"
         const val DISTANCE = "distance"
+        const val ICON_URL = "iconUrl"
     }
 }

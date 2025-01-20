@@ -7,10 +7,15 @@ import com.example.data.model.PlaceLocalWithFavourite
 import com.example.data.remote.model.PlaceResponse
 import com.example.domain.entity.Place
 
-fun PlaceLocal.mapToDb(): PlaceDb = PlaceDb(id = id, name = name, distance = distance)
+fun PlaceLocal.mapToDb(): PlaceDb =
+    PlaceDb(id = id, name = name, distance = distance, iconUrl = iconUrl)
 
 fun PlaceResponse.mapToLocal() =
-    PlaceLocal(id = id, distance = distance, name = name)
+    PlaceLocal(
+        id = id,
+        distance = distance,
+        name = name,
+        iconUrl = categories.firstOrNull()?.icon?.let { "${it.prefix}120${it.suffix}" })
 
 fun PlaceDbWithFavourite.mapToLocal() =
     PlaceLocalWithFavourite(
@@ -18,8 +23,15 @@ fun PlaceDbWithFavourite.mapToLocal() =
             id = id,
             name = name,
             distance = distance,
+            iconUrl = iconUrl,
         ), isFavourite = favouriteId != null
     )
 
 fun PlaceLocalWithFavourite.mapToDomain(): Place =
-    Place(id = place.id, name = place.name, distance = place.distance, isFavourite = isFavourite)
+    Place(
+        id = place.id,
+        name = place.name,
+        distance = place.distance,
+        iconUrl = place.iconUrl,
+        isFavourite = isFavourite,
+    )
