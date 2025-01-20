@@ -6,7 +6,11 @@ import com.example.domain.entity.PlacePage
 sealed class PlaceSearchResult {
     object PlaceSearchLoading : PlaceSearchResult()
     data class PlaceSearchSuccess(val page: PlacePage) :
-        PlaceSearchResult()
+        PlaceSearchResult() {
+        companion object {
+            fun empty(): PlaceSearchSuccess = PlaceSearchSuccess(page = PlacePage.empty())
+        }
+    }
 
     data class PlaceSearchFailed(val error: PlaceSearchError) : PlaceSearchResult()
 }

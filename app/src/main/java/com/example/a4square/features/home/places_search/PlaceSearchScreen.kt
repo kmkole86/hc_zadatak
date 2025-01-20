@@ -1,14 +1,25 @@
 package com.example.a4square.features.home.places_search
 
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.a4square.features.home.places_search.list.OnBottomReached
-import com.example.a4square.features.home.places_search.list.PlacesList
+import com.example.a4square.features.home.places_search.list.PlaceListErrorItem
+import com.example.a4square.features.home.places_search.list.PlaceListInfoItem
+import com.example.a4square.features.home.places_search.list.PlaceListItem
+import com.example.a4square.features.home.places_search.list.PlaceListLoadingItem
 
 @Composable
 fun PlaceSearchScreen(
@@ -16,23 +27,79 @@ fun PlaceSearchScreen(
     onPlaceClicked: (String) -> Unit,
     viewModel: PlaceSearchViewModel = hiltViewModel(),
 ) {
-    val listState = rememberLazyListState()
+    val lazyListState = rememberLazyListState()
     val searchText by viewModel.searchText.collectAsStateWithLifecycle()
     val searchResult by viewModel.searchResult.collectAsStateWithLifecycle()
 
-    listState.OnBottomReached {
+    lazyListState.OnBottomReached {
         viewModel::loadNextPage.invoke()
     }
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
+        OutlinedTextField(
+            value = searchText,
+            onValueChange = viewModel::onQueryChangedEvent,
+            modifier = modifier.fillMaxWidth()
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        if (searchText.length < 3)
+            PlaceListInfoItem(
+                message = "Type 3 or more chars to start search...",
+                modifier = modifier
+            )
+        else
+            LazyColumn(
+                state = lazyListState, modifier = modifier
+                    .fillMaxSize()
+                    .weight(1f)
+            ) {
+                items(
+                    searchResult.places.size,
+                    key = { index -> searchResult.places[index].id },
+                    itemContent = { index ->
+                        PlaceListItem(
+                            place = searchResult.places[index],
+                            onPlaceClicked = onPlaceClicked,
+                            modifier = modifier
+                        )
+                    })
+                when (searchResult) {
+                    is PlacesListState.PlacesListStateFailed -> {
+                        item {
+                            PlaceListErrorItem(
+                                onRetryClicked = viewModel::onRetry,
+                                modifier = modifier
+                            )
+                        }
+                    }
 
-    OutlinedTextField(
-        value = searchText,
-        onValueChange = viewModel::onQueryChangedEvent
-    )
-//    PlacesList(
-//        lazyListState = listState,
-//        listState = searchResult,
-//        onPlaceClicked = onPlaceClicked,
-//        onRetryClicked = viewModel::onRetry,
-//        modifier = modifier
-//    )
+                    is PlacesListState.PlacesListStateLoaded -> {
+                        if (searchResult.places.isEmpty())
+                            item {
+                                PlaceListInfoItem(
+                                    message = "No result",
+                                    modifier = modifier
+                                )
+                            }
+                        else item {
+                            PlaceListLoadingItem(modifier = modifier)
+                        }
+                    }
+
+                    is PlacesListState.PlacesListStateLoading -> {
+                        item {
+                            PlaceListLoadingItem(modifier = modifier)
+                        }
+                    }
+
+                    is PlacesListState.PlacesListStateEndOfList -> {
+                        // no extra compose at the bottom for this case
+                    }
+                }
+
+            }
+    }
 }

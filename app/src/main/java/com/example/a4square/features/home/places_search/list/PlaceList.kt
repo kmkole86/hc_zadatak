@@ -1,11 +1,9 @@
 package com.example.a4square.features.home.places_search.list
 
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -29,68 +27,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.a4square.R
-import com.example.a4square.features.home.places_search.PlacesListState
-import com.example.a4square.features.home.places_search.hasNextPage
 import com.example.domain.entity.Place
-
-@Composable
-fun PlacesList(
-    lazyListState: LazyListState,
-    modifier: Modifier = Modifier,
-    listState: PlacesListState,
-    onPlaceClicked: (String) -> Unit,
-    onRetryClicked: () -> Unit,
-) {
-
-    LazyColumn(
-        state = lazyListState, modifier = modifier.fillMaxSize()
-    ) {
-        items(
-            listState.places.size + if (listState.hasNextPage) 1 else 0,
-            key = { index -> listState.places[index].id },
-            itemContent = { index ->
-                when (listState) {
-                    is PlacesListState.PlacesListStateEndOfList -> {
-                        PlaceListItem(
-                            place = listState.places[index],
-                            onPlaceClicked = onPlaceClicked,
-                            modifier = modifier
-                        )
-                    }
-
-                    is PlacesListState.PlacesListStateFailed -> {
-                        if (index < listState.places.size) {
-                            PlaceListItem(
-                                place = listState.places[index],
-                                onPlaceClicked = onPlaceClicked,
-                                modifier = modifier
-                            )
-                        } else {
-                            PlaceListErrorItem(
-                                onRetryClicked = onRetryClicked,
-                                modifier = modifier
-                            )
-                        }
-                    }
-
-                    is PlacesListState.PlacesListStateLoaded,
-                    is PlacesListState.PlacesListStateLoading -> {
-                        if (index < listState.places.size) {
-                            PlaceListItem(
-                                place = listState.places[index],
-                                onPlaceClicked = onPlaceClicked,
-                                modifier = modifier
-                            )
-                        } else {
-                            PlaceListLoadingItem(modifier = modifier)
-                        }
-                    }
-
-                    is PlacesListState.PlacesListStateIdle -> PlaceListInfoItem(modifier = modifier)
-                }
-            })
-    }
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -128,34 +65,18 @@ fun PlaceListItem(
 }
 
 @Composable
-@Preview
-fun PlaceListInfoItem(modifier: Modifier = Modifier) {
-    Card(
-        modifier = Modifier
-            .padding(vertical = 16.dp, horizontal = 16.dp)
-            .fillMaxWidth(),
-        shape = RoundedCornerShape(corner = CornerSize(16.dp)),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = 10.dp
-        )
-    ) {
-        Text(
+fun PlaceListInfoItem(message: String, modifier: Modifier = Modifier) {
+    Text(
             modifier = modifier
                 .fillMaxWidth()
                 .padding(top = 16.dp, start = 16.dp, end = 16.dp, bottom = 8.dp),
-            text = "Type 3 or more chars...",
-            maxLines = 1,
+        text = message,
+        maxLines = 2,
             textAlign = TextAlign.Center,
             overflow = TextOverflow.Ellipsis,
             style = MaterialTheme.typography.bodyLarge,
             fontWeight = FontWeight.Bold
         )
-        LinearProgressIndicator(
-            modifier = modifier
-                .fillMaxWidth()
-                .padding(bottom = 8.dp, start = 16.dp, end = 16.dp)
-        )
-    }
 }
 
 @Composable

@@ -5,7 +5,6 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.toRoute
 import com.example.a4square.features.home.DetailsRoute
 import com.example.a4square.features.home.SearchRoute
 import com.example.a4square.features.home.navigateToPlaceDetails
@@ -26,8 +25,7 @@ fun PlaceSearchGraphScreen() {
                 )
             })
         }
-        composable<DetailsRoute> { route ->
-            val bla = route.toRoute<DetailsRoute>()
+        composable<DetailsRoute> {
             PlaceDetailsScreen()
         }
     }

@@ -3,7 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
 //    alias(libs.plugins.hilt)
     id("com.google.dagger.hilt.android")
-    id("kotlin-kapt")
+    id("com.google.devtools.ksp")
     id("kotlinx-serialization")
 }
 
@@ -44,7 +44,7 @@ dependencies {
     //hilt
     implementation(libs.hilt)
     implementation(libs.androidx.espresso.core)
-    kapt(libs.hilt.compiler)
+    ksp(libs.hilt.compiler)
 
     //coroutines
     implementation(libs.coroutines)
@@ -52,7 +52,7 @@ dependencies {
     //room
     implementation(libs.room)
     implementation(libs.room.ktx)
-    kapt(libs.room.compiler)
+    ksp(libs.room.compiler)
 
     //ktor
     implementation(libs.ktor)
@@ -65,8 +65,4 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
-}
-
-kapt {
-    correctErrorTypes = true
 }

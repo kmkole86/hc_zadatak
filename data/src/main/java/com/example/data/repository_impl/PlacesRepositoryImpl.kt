@@ -7,6 +7,7 @@ import com.example.domain.entity.Place
 import com.example.domain.entity.PlacePage
 import com.example.domain.entity.result.FavouriteStatusResult
 import com.example.domain.entity.result.PlaceResult
+import com.example.domain.entity.result.PlaceSearchError
 import com.example.domain.entity.result.PlaceSearchResult
 import com.example.domain.repository.PlacesRepository
 import kotlinx.coroutines.CoroutineDispatcher
@@ -43,7 +44,13 @@ class PlacesRepositoryImpl(
                         )
                     )
                 )
-            }.onFailure { }
+            }.onFailure {
+                emit(
+                    PlaceSearchResult.PlaceSearchFailed(
+                        error = PlaceSearchError.GenericError
+                    )
+                )
+            }
         }.onStart { emit(PlaceSearchResult.PlaceSearchLoading) }.flowOn(dispatcher)
 
     override fun changePlaceFavouriteStatus(placeId: String): Flow<FavouriteStatusResult> =

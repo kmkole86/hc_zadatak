@@ -7,4 +7,5 @@ plugins {
     alias(libs.plugins.jetbrains.kotlin.jvm) apply false
     alias(libs.plugins.kotlin.compose) apply false
     alias(libs.plugins.kotlinx.serialization) apply false
+    id("com.google.devtools.ksp") version "2.1.0-1.0.29" apply false
 }
