@@ -56,6 +56,7 @@ fun PlaceSearchScreen(
                     .fillMaxSize()
                     .weight(1f)
             ) {
+                //show place result items if any
                 items(
                     searchResult.places.size,
                     key = { index -> searchResult.places[index].id },
@@ -66,9 +67,25 @@ fun PlaceSearchScreen(
                             modifier = modifier
                         )
                     })
+                //add extra (info) item if necessary
+
+                //to avoid blocking UI, and to give user feedback at any moment
+                //cases like loading of the next page,
+                //or error when next page fetch has failed
+                //is implemented with "extra" item at the end of the list
+                //PlaceListLoadingItem: when there is next page available or page is fetching
+                //PlaceListErrorItem: when there is an error fetching next page
                 when (searchResult) {
+                    is PlacesListState.PlacesListStateLoading -> {
+                        item {
+                            //TODO ADD KEY
+                            PlaceListLoadingItem(modifier = modifier)
+                        }
+                    }
+
                     is PlacesListState.PlacesListStateFailed -> {
                         item {
+                            //TODO ADD KEY
                             PlaceListErrorItem(
                                 onRetryClicked = viewModel::onRetry,
                                 modifier = modifier
@@ -77,29 +94,22 @@ fun PlaceSearchScreen(
                     }
 
                     is PlacesListState.PlacesListStateLoaded -> {
-                        if (searchResult.places.isEmpty())
-                            item {
-                                PlaceListInfoItem(
-                                    message = "No result",
-                                    modifier = modifier
-                                )
+                        if (!searchResult.hasNextPage) {
+                            if (searchResult.places.isEmpty())
+                                item {
+                                    //TODO ADD KEY
+                                    PlaceListInfoItem(
+                                        message = "No result",
+                                        modifier = modifier
+                                    )
+                                }
+                            else item {
+                                //TODO ADD KEY
+                                PlaceListLoadingItem(modifier = modifier)
                             }
-                        else item {
-                            PlaceListLoadingItem(modifier = modifier)
                         }
-                    }
-
-                    is PlacesListState.PlacesListStateLoading -> {
-                        item {
-                            PlaceListLoadingItem(modifier = modifier)
-                        }
-                    }
-
-                    is PlacesListState.PlacesListStateEndOfList -> {
-                        // no extra compose at the bottom for this case
                     }
                 }
-
             }
     }
 }

@@ -9,24 +9,30 @@ import kotlinx.collections.immutable.persistentListOf
 @Stable
 sealed class PlacesListState {
 
+    companion object {
+        fun empty() = PlacesListStateLoaded(places = persistentListOf(), nextPageCursor = null)
+    }
+
+    val hasNextPage: Boolean
+        get() = nextPageCursor != null
+
     abstract val places: ImmutableList<Place>
-    val nextPageCursor: String?
+    abstract val nextPageCursor: String?
 
     data class PlacesListStateLoading(
         override val places: ImmutableList<Place>,
+        override val nextPageCursor: String?,
     ) : PlacesListState()
 
     data class PlacesListStateFailed(
         override val places: ImmutableList<Place>,
+        override val nextPageCursor: String?,
         val error: PlaceSearchError?
     ) : PlacesListState()
 
     data class PlacesListStateLoaded(
         override val places: ImmutableList<Place>,
-    ) : PlacesListState()
-
-    data class PlacesListStateEndOfList(
-        override val places: ImmutableList<Place>,
+        override val nextPageCursor: String?,
     ) : PlacesListState()
 }
 
