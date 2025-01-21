@@ -16,19 +16,11 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(modifier: Modifier = Modifier) {
     val navController = rememberNavController()
     Scaffold(
         modifier = modifier,
-//        topBar = {
-//            TopAppBar(
-//                title = {
-//                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center)
-//                    { Text("Aktiia zadatak", textAlign = TextAlign.Center) }
-//                })
-//        },
         bottomBar = {
             NavigationBar {
                 val navBackStackEntry by navController.currentBackStackEntryAsState()

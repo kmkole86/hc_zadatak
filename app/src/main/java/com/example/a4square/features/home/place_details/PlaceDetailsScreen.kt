@@ -3,6 +3,7 @@ package com.example.a4square.features.home.place_details
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -27,6 +28,7 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
@@ -43,11 +45,12 @@ fun PlaceDetailsScreen(
     val screenState by viewModel.placeDetails.collectAsStateWithLifecycle()
 
     Scaffold(
+        contentWindowInsets = WindowInsets(0.dp),
         topBar = {
             TopAppBar(
                 title = {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center)
-                    { Text("Aktiia zadatak", textAlign = TextAlign.Center) }
+                    { Text("Marko Kostic", textAlign = TextAlign.Center) }
                 },
                 navigationIcon = {
                     IconButton(onClick = { onNavigateBack() }) {
@@ -61,7 +64,7 @@ fun PlaceDetailsScreen(
         },
     ) { innerPadding ->
         Column(
-            Modifier
+            modifier
                 .fillMaxWidth()
                 .padding(innerPadding),
             horizontalAlignment = Alignment.CenterHorizontally
@@ -71,7 +74,11 @@ fun PlaceDetailsScreen(
             PlaceDetailsState.PlaceDetailsLoading -> Text("loading")
             is PlaceDetailsState.PlaceDetailsSuccess -> {
                 if (placeDetails.placeDetails == null) Text("Not found in cache")
-                else Column(modifier = modifier.fillMaxSize()) {
+                else Column(
+                    modifier = modifier
+                        .fillMaxSize()
+                        .padding(horizontal = dimensionResource(id = R.dimen.spacing_2x))
+                ) {
                     GlideImage(
                         model = placeDetails.placeDetails.iconUrl,
                         contentDescription = "icon",
@@ -86,7 +93,6 @@ fun PlaceDetailsScreen(
                         modifier = modifier.padding(all = dimensionResource(id = R.dimen.spacing_1x)),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-
                         Text(
                             modifier = modifier.weight(1f),
                             text = placeDetails.placeDetails.name,
@@ -106,6 +112,30 @@ fun PlaceDetailsScreen(
                             )
                         }
                     }
+                    Text(
+                        modifier = modifier.fillMaxWidth(),
+                        text = placeDetails.placeDetails.id,
+                        textAlign = TextAlign.Center,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                        style = MaterialTheme.typography.bodyLarge,
+                    )
+                    Text(
+                        modifier = modifier.fillMaxWidth(),
+                        text = placeDetails.placeDetails.timeZone ?: "no time zone available",
+                        textAlign = TextAlign.Center,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                        style = MaterialTheme.typography.bodyLarge,
+                    )
+                    Text(
+                        modifier = modifier.fillMaxWidth(),
+                        text = placeDetails.placeDetails.link ?: "no link available",
+                        textAlign = TextAlign.Center,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                        style = MaterialTheme.typography.bodyLarge,
+                    )
                 }
             }
 
