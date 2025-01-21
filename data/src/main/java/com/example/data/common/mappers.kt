@@ -1,15 +1,15 @@
 package com.example.data.common
 
-import com.example.data.local.model.PlaceDb
-import com.example.data.local.model.PlaceDbWithFavourite
-import com.example.data.local.model.PlaceDetailsDb
-import com.example.data.local.model.PlaceDetailsDbWithFavourite
+import com.example.data.api.model.PlaceDetailsResponse
+import com.example.data.api.model.PlaceResponse
+import com.example.data.database.model.PlaceDb
+import com.example.data.database.model.PlaceDbWithFavourite
+import com.example.data.database.model.PlaceDetailsDb
+import com.example.data.database.model.PlaceDetailsDbWithFavourite
 import com.example.data.model.PlaceDetailsLocal
 import com.example.data.model.PlaceDetailsLocalWithFavourite
 import com.example.data.model.PlaceLocal
 import com.example.data.model.result.PlaceLocalWithFavourite
-import com.example.data.remote.model.PlaceDetailsResponse
-import com.example.data.remote.model.PlaceResponse
 import com.example.domain.entity.Place
 import com.example.domain.entity.PlaceDetails
 
@@ -81,6 +81,15 @@ fun PlaceDetailsLocal.mapToDb() = PlaceDetailsDb(
     closedBucket = closedBucket,
     timeZone = timeZone
 )
+
+fun PlaceDb.mapToLocal() =
+    PlaceLocal(
+        id = id,
+        name = name,
+        iconUrl = iconUrl,
+        distance = distance
+    )
+
 
 
 //s obzirom da se

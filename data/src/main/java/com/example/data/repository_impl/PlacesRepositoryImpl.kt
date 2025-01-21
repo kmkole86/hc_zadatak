@@ -1,13 +1,14 @@
 package com.example.data.repository_impl
 
+import com.example.data.api.data_source_impl.PlacesRemoteDataSource
 import com.example.data.common.mapToDomain
 import com.example.data.common.mapToLocal
-import com.example.data.local.data_source_impl.PlacesLocalDataSource
+import com.example.data.database.data_source_impl.PlacesLocalDataSource
+import com.example.data.device.data_source_impl.DeviceNetworkDataSource
 import com.example.data.model.PlaceDetailsLocalWithFavourite
 import com.example.data.model.PlaceSearchLocalResult
 import com.example.data.model.result.PlaceDetailsLocalResult
 import com.example.data.model.result.PlaceLocalWithFavourite
-import com.example.data.remote.data_source_impl.PlacesRemoteDataSource
 import com.example.domain.entity.result.FavouriteStatusResult
 import com.example.domain.entity.result.PlaceDetailsError
 import com.example.domain.entity.result.PlaceDetailsResult
@@ -24,6 +25,7 @@ import kotlinx.coroutines.flow.onStart
 
 class PlacesRepositoryImpl(
     private val dispatcher: CoroutineDispatcher,
+    private val deviceNetworkDataSource: DeviceNetworkDataSource,
     private val localDatasource: PlacesLocalDataSource,
     private val remoteDataSource: PlacesRemoteDataSource
 ) : PlacesRepository {
@@ -42,26 +44,6 @@ class PlacesRepositoryImpl(
                 is PlaceDetailsLocalResult.PlaceDetailsSuccess -> PlaceDetailsResult.PlaceDetailsSuccess(
                     placeDetails = placeDetails?.mapToDomain()
                 )
-//                is PlaceSearchLocalResult.PlaceSearchFailed -> {
-//                    PlaceSearchResult.PlaceSearchFailed(
-//                        places = searchIndex.map { it.mapToDomain() },
-//                        nextPageCursor = pageCursor, error = apiResult.error
-//                    )
-//                }
-//
-//                PlaceSearchLocalResult.PlaceSearchLoading -> {
-//                    PlaceSearchResult.PlaceSearchLoading(
-//                        places = searchIndex.map { it.mapToDomain() },
-//                        nextPageCursor = pageCursor,
-//                    )
-//                }
-//
-//                is PlaceSearchLocalResult.PlaceSearchSuccess -> {
-//                    PlaceSearchResult.PlaceSearchSuccess(
-//                        places = searchIndex.map { it.mapToDomain() },
-//                        nextPageCursor = apiResult.nextPageCursor
-//                    )
-//                }
             }
         }
 
@@ -94,6 +76,8 @@ class PlacesRepositoryImpl(
             }
         }
 
+//    fun searchPlacesFromApi(query: String, pageCursor: String?)
+
 
     override fun changePlaceFavouriteStatus(placeId: String): Flow<FavouriteStatusResult> =
         flow<FavouriteStatusResult> {
@@ -120,6 +104,29 @@ class PlacesRepositoryImpl(
                 )
             )
         }.flowOn(dispatcher)
+
+    private fun getPlacesFromLocalCache(query: String, pageCursor: String?) =
+        flow<PlaceSearchLocalResult> {
+            if (pageCursor == null) localDatasource.clearSearchIndex()//todo vidi ovo i ovo ispod u success
+            localDatasource.searchPlaceLocally(query = query, pageCursor = pageCursor).onSuccess {
+                with(it) {
+//                    localDatasource.cacheSearchResult(places) //no need since its already in the cache
+                    localDatasource.updateSearchIndex(places)
+                }
+                emit(
+                    PlaceSearchLocalResult.PlaceSearchSuccess(
+                        places = it.places,
+                        nextPageCursor = it.nextPageCursor
+                    )
+                )
+            }.onFailure {
+                emit(
+                    PlaceSearchLocalResult.PlaceSearchFailed(
+                        error = PlaceSearchError.GenericError
+                    )
+                )
+            }
+        }.onStart { emit(PlaceSearchLocalResult.PlaceSearchLoading) }.flowOn(dispatcher)
 
     private fun getPlacesFromApiAndCashItLocally(query: String, pageCursor: String?) =
         flow<PlaceSearchLocalResult> {

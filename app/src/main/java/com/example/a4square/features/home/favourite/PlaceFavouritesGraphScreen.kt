@@ -28,6 +28,7 @@ fun PlaceFavouritesGraphScreen() {
         composable<DetailsRoute> {
 
 
-            PlaceDetailsScreen() }
+            PlaceDetailsScreen(onNavigateBack = { navController.popBackStack() })
+        }
     }
 }

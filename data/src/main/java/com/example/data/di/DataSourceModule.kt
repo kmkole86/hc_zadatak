@@ -1,7 +1,7 @@
 package com.example.data.di
 
-import com.example.data.local.data_source_impl.AuthDataSourceImpl
-import com.example.data.remote.data_source_impl.PlacesRemoteDataSourceImpl
+import com.example.data.database.data_source_impl.AuthDataSourceImpl
+import com.example.data.api.data_source_impl.PlacesRemoteDataSourceImpl
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
