@@ -4,15 +4,17 @@ package com.example.data.device.data_source_impl
 
 interface DeviceNetworkDataSource {
 
-    suspend fun internetAvailable(): Boolean
+    fun internetAvailable(): Boolean
 }
 
 class DeviceNetworkDataSourceImpl :
     DeviceNetworkDataSource {
 
-    override suspend fun internetAvailable(): Boolean {
+    override fun internetAvailable(): Boolean {
         //TODO implement network status monitoring using ConnectivityManager
         //TODO listen in the app scope
+
+        //switch true/false to simulate internet status
         return true
     }
 }

@@ -42,7 +42,7 @@ interface PlaceDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertPlaces(places: List<PlaceDb>)
 
-    @Query("SELECT * from ${PlaceDb.ENTITY_NAME} WHERE ${PlaceDb.NAME} LIKE :query")
+    @Query("SELECT * from ${PlaceDb.ENTITY_NAME} WHERE ${PlaceDb.NAME} LIKE '%' || :query || '%'")
     fun searchPlaceCache(query: String): List<PlaceDb>
 
     //place details cache
@@ -51,4 +51,7 @@ interface PlaceDao {
 
     @Query("SELECT * from (SELECT * FROM ${PlaceDetailsDb.ENTITY_NAME} WHERE ${PlaceDetailsDb.ID} =:placeId) as PlaceDetails LEFT JOIN ${FavouritePlaceIdDb.ENTITY_NAME} AS FavouriteId ON PlaceDetails.id = FavouriteId.fav_id LIMIT 1")
     fun observePlaceDetails(placeId: String): Flow<PlaceDetailsDbWithFavourite?>
+
+    @Query("SELECT * FROM ${PlaceDetailsDb.ENTITY_NAME} WHERE ${PlaceDetailsDb.ID} =:placeId LIMIT 1")
+    fun getPlaceDetails(placeId: String): PlaceDetailsDb?
 }

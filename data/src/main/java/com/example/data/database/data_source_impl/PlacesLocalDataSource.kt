@@ -34,6 +34,8 @@ interface PlacesLocalDataSource {
     suspend fun cachePlaceDetails(place: PlaceDetailsLocal)
 
     suspend fun searchPlaceLocally(query: String, pageCursor: String?): Result<PlacePageLocal>
+
+    fun getPlaceDetails(placeId: String): PlaceDetailsLocal?
 }
 
 class PlacesLocalDataSourceImpl @Inject constructor(private val dao: PlaceDao) :
@@ -86,4 +88,9 @@ class PlacesLocalDataSourceImpl @Inject constructor(private val dao: PlaceDao) :
             )
         )
     }
+
+    override fun getPlaceDetails(placeId: String): PlaceDetailsLocal? =
+        dao.getPlaceDetails(placeId = placeId)?.mapToLocal()
 }
+
+//offline first

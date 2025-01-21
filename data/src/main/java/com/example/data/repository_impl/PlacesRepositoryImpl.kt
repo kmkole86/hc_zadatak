@@ -30,26 +30,12 @@ class PlacesRepositoryImpl(
     private val remoteDataSource: PlacesRemoteDataSource
 ) : PlacesRepository {
 
-    override fun getPlaceDetails(placeId: String): Flow<PlaceDetailsResult> =
-        combine<PlaceDetailsLocalResult, PlaceDetailsLocalWithFavourite?, PlaceDetailsResult>(
-            flow = getPlaceDetailsFromApiAndCacheItLocally(placeId = placeId),
-            flow2 = localDatasource.observePlaceDetails(placeId = placeId)
-        ) { apiResult, placeDetails ->
-            when (apiResult) {
-                is PlaceDetailsLocalResult.PlaceDetailsFailed -> PlaceDetailsResult.PlaceDetailsFailed(
-                    error = apiResult.error
-                )
-
-                PlaceDetailsLocalResult.PlaceDetailsLoading -> PlaceDetailsResult.PlaceDetailsLoading
-                is PlaceDetailsLocalResult.PlaceDetailsSuccess -> PlaceDetailsResult.PlaceDetailsSuccess(
-                    placeDetails = placeDetails?.mapToDomain()
-                )
-            }
-        }
-
     override fun searchPlace(query: String, pageCursor: String?): Flow<PlaceSearchResult> =
         combine<PlaceSearchLocalResult, List<PlaceLocalWithFavourite>, PlaceSearchResult>(
-            flow = getPlacesFromApiAndCashItLocally(query = query, pageCursor = pageCursor),
+            flow = if (deviceNetworkDataSource.internetAvailable()) getPlacesFromApiAndCashItLocally(
+                query = query,
+                pageCursor = pageCursor
+            ) else getPlacesFromCacheAndUpdateIndex(query = query, pageCursor = pageCursor),
             flow2 = localDatasource.observeSearchIndex()
         ) { apiResult, searchIndex ->
             when (apiResult) {
@@ -75,9 +61,6 @@ class PlacesRepositoryImpl(
                 }
             }
         }
-
-//    fun searchPlacesFromApi(query: String, pageCursor: String?)
-
 
     override fun changePlaceFavouriteStatus(placeId: String): Flow<FavouriteStatusResult> =
         flow<FavouriteStatusResult> {
@@ -105,12 +88,11 @@ class PlacesRepositoryImpl(
             )
         }.flowOn(dispatcher)
 
-    private fun getPlacesFromLocalCache(query: String, pageCursor: String?) =
+    private fun getPlacesFromCacheAndUpdateIndex(query: String, pageCursor: String?) =
         flow<PlaceSearchLocalResult> {
-            if (pageCursor == null) localDatasource.clearSearchIndex()//todo vidi ovo i ovo ispod u success
+            if (pageCursor == null) localDatasource.clearSearchIndex()
             localDatasource.searchPlaceLocally(query = query, pageCursor = pageCursor).onSuccess {
                 with(it) {
-//                    localDatasource.cacheSearchResult(places) //no need since its already in the cache
                     localDatasource.updateSearchIndex(places)
                 }
                 emit(
@@ -130,7 +112,7 @@ class PlacesRepositoryImpl(
 
     private fun getPlacesFromApiAndCashItLocally(query: String, pageCursor: String?) =
         flow<PlaceSearchLocalResult> {
-            if (pageCursor == null) localDatasource.clearSearchIndex()//todo vidi ovo i ovo ispod u success ako moze
+            if (pageCursor == null) localDatasource.clearSearchIndex()
         remoteDataSource.searchPlace(query = query, pageCursor = pageCursor).onSuccess {
             with(it) {
                 localDatasource.cacheSearchResult(places.map { it.mapToLocal() })
@@ -151,6 +133,25 @@ class PlacesRepositoryImpl(
         }
     }.onStart { emit(PlaceSearchLocalResult.PlaceSearchLoading) }.flowOn(dispatcher)
 
+    override fun getPlaceDetails(placeId: String): Flow<PlaceDetailsResult> =
+        combine<PlaceDetailsLocalResult, PlaceDetailsLocalWithFavourite?, PlaceDetailsResult>(
+            flow = if (deviceNetworkDataSource.internetAvailable()) getPlaceDetailsFromApiAndCacheItLocally(
+                placeId = placeId
+            )
+            else getPlaceDetailsFromCache(placeId = placeId),
+            flow2 = localDatasource.observePlaceDetails(placeId = placeId)
+        ) { apiResult, placeDetails ->
+            when (apiResult) {
+                is PlaceDetailsLocalResult.PlaceDetailsFailed -> PlaceDetailsResult.PlaceDetailsFailed(
+                    error = apiResult.error
+                )
+
+                PlaceDetailsLocalResult.PlaceDetailsLoading -> PlaceDetailsResult.PlaceDetailsLoading
+                is PlaceDetailsLocalResult.PlaceDetailsSuccess -> PlaceDetailsResult.PlaceDetailsSuccess(
+                    placeDetails = placeDetails?.mapToDomain()
+                )
+            }
+        }
 
     private fun getPlaceDetailsFromApiAndCacheItLocally(placeId: String) =
         flow<PlaceDetailsLocalResult> {
@@ -170,6 +171,16 @@ class PlacesRepositoryImpl(
                 )
             }
         }.onStart { emit(PlaceDetailsLocalResult.PlaceDetailsLoading) }.flowOn(dispatcher)
+
+    private fun getPlaceDetailsFromCache(placeId: String) =
+        flow<PlaceDetailsLocalResult> {
+            emit(
+                PlaceDetailsLocalResult.PlaceDetailsSuccess(
+                    placeDetails = localDatasource.getPlaceDetails(placeId = placeId)
+                )
+            )
+        }.onStart { emit(PlaceDetailsLocalResult.PlaceDetailsLoading) }.flowOn(dispatcher)
 }
 
 //use case level je premesten u repository
+//network monitoring, repo moze ovako moze sa wrapperom

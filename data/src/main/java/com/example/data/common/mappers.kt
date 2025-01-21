@@ -90,6 +90,16 @@ fun PlaceDb.mapToLocal() =
         distance = distance
     )
 
+fun PlaceDetailsDb.mapToLocal() =
+    PlaceDetailsLocal(
+        id = id,
+        name = name,
+        iconUrl = iconUrl,
+        closedBucket = closedBucket,
+        link = link,
+        timeZone = timeZone
+    )
+
 
 
 //s obzirom da se
