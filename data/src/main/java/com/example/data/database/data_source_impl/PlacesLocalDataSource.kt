@@ -58,8 +58,6 @@ class PlacesLocalDataSourceImpl @Inject constructor(private val dao: PlaceDao) :
         dao.clearSearchIndex()
     }
 
-    //could be part of the cacheSearchResult but done separate
-    //due to the offline mode
     override suspend fun updateSearchIndex(places: List<PlaceLocal>) {
         dao.insertSearchIndexPlaceId(places.map { PlaceDbSearchIndex(id = it.id) })
     }
@@ -92,5 +90,3 @@ class PlacesLocalDataSourceImpl @Inject constructor(private val dao: PlaceDao) :
     override fun getPlaceDetails(placeId: String): PlaceDetailsLocal? =
         dao.getPlaceDetails(placeId = placeId)?.mapToLocal()
 }
-
-//offline first

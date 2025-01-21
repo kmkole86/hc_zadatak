@@ -181,6 +181,3 @@ class PlacesRepositoryImpl(
             )
         }.onStart { emit(PlaceDetailsLocalResult.PlaceDetailsLoading) }.flowOn(dispatcher)
 }
-
-//use case level je premesten u repository
-//network monitoring, repo moze ovako moze sa wrapperom

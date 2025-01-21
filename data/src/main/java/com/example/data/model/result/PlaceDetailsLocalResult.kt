@@ -12,5 +12,3 @@ sealed class PlaceDetailsLocalResult {
         val error: PlaceDetailsError,
     ) : PlaceDetailsLocalResult()
 }
-
-//dva pristupa za favourite da se slusaju odvojeno pa da se merguju u UI-u ili sve u data layeru

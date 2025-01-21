@@ -12,6 +12,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.outlined.Favorite
 import androidx.compose.material.icons.outlined.FavoriteBorder
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -70,8 +71,23 @@ fun PlaceDetailsScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
         when (val placeDetails = screenState) {
-            is PlaceDetailsState.PlaceDetailsFailed -> Text("failed")
-            PlaceDetailsState.PlaceDetailsLoading -> Text("loading")
+            is PlaceDetailsState.PlaceDetailsFailed -> Column(
+                modifier = modifier
+                    .fillMaxSize()
+                    .padding(horizontal = dimensionResource(id = R.dimen.spacing_2x))
+            ) {
+                Text("Fetch failed")
+                Button(
+                    modifier = modifier
+                        .fillMaxWidth()
+                        .padding(all = 16.dp),
+                    onClick = viewModel::onRetry
+                ) {
+                    Text(text = "Retry")
+                }
+            }
+
+            PlaceDetailsState.PlaceDetailsLoading -> Text("Loading")
             is PlaceDetailsState.PlaceDetailsSuccess -> {
                 if (placeDetails.placeDetails == null) Text("Not found in cache")
                 else Column(
@@ -143,50 +159,3 @@ fun PlaceDetailsScreen(
     }
     }
 }
-//    Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-//        when (val placeDetails = screenState) {
-//            is PlaceDetailsState.PlaceDetailsFailed -> Text("failed")
-//            PlaceDetailsState.PlaceDetailsLoading -> Text("loading")
-//            is PlaceDetailsState.PlaceDetailsSuccess -> {
-//                if (placeDetails.placeDetails == null) Text("Not found in cache")
-//                else Column(modifier = modifier.fillMaxSize()) {
-//                    GlideImage(
-//                        model = placeDetails.placeDetails.iconUrl,
-//                        contentDescription = "icon",
-//                        modifier = modifier
-//                            .aspectRatio(ratio = 1f)
-//                            .fillMaxWidth(),
-//                    ) {
-//                        it.error(R.drawable.error).placeholder(R.drawable.image)
-//                            .load(placeDetails.placeDetails.iconUrl)
-//                    }
-//                    Row(
-//                        modifier = modifier.padding(all = dimensionResource(id = R.dimen.spacing_1x)),
-//                        verticalAlignment = Alignment.CenterVertically,
-//                    ) {
-//
-//                        Text(
-//                            modifier = modifier.weight(1f),
-//                            text = placeDetails.placeDetails.name,
-//                            textAlign = TextAlign.Center,
-//                            maxLines = 2,
-//                            overflow = TextOverflow.Ellipsis,
-//                            style = MaterialTheme.typography.bodyLarge,
-//                            fontWeight = FontWeight.Bold
-//                        )
-//                        IconButton(
-//                            onClick = { viewModel.onChangePlaceFavouriteStatus(placeId = placeDetails.placeDetails.id) },
-//                            modifier
-//                        ) {
-//                            Icon(
-//                                if (placeDetails.placeDetails.isFavourite) Icons.Outlined.Favorite else Icons.Outlined.FavoriteBorder,
-//                                "Favourite"
-//                            )
-//                        }
-//                    }
-//                }
-//            }
-//
-//        }
-//    }
-//}

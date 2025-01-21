@@ -1,7 +1,6 @@
 package com.example.data.device.data_source_impl
 
-//lot of things mocked due to no time
-
+//mocked due to no time
 interface DeviceNetworkDataSource {
 
     fun internetAvailable(): Boolean

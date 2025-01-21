@@ -16,7 +16,6 @@ import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
@@ -40,7 +39,7 @@ import com.bumptech.glide.integration.compose.GlideImage
 import com.example.a4square.R
 import com.example.domain.entity.Place
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalGlideComposeApi::class)
+@OptIn(ExperimentalGlideComposeApi::class)
 @Composable
 fun PlaceListItem(
     place: Place,
@@ -201,5 +200,3 @@ fun LazyListState.OnBottomReached(
         }
     }
 }
-
-//@Immutable za presentation model tipa uiItem

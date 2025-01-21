@@ -61,7 +61,7 @@ fun PlaceFavouritesScreen(
                     .padding(horizontal = dimensionResource(id = R.dimen.spacing_2x))
                     .weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                //show place result items if any
+                //show place search result items if any
                 items(
                     favourites.places.size,
                     key = { index -> favourites.places[index].id },
@@ -87,7 +87,6 @@ fun PlaceFavouritesScreen(
                             PlaceListLoadingItem(modifier = modifier)
                         }
                     }
-
                     is PlacesListState.PlacesListStateFailed -> {
                         item {
                             PlaceListErrorItem(
@@ -96,7 +95,6 @@ fun PlaceFavouritesScreen(
                             )
                         }
                     }
-
                     is PlacesListState.PlacesListStateLoaded -> {
                         if (favourites.places.isEmpty()) {
                             item {

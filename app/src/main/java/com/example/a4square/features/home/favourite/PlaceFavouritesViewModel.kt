@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 
@@ -27,15 +28,28 @@ class PlaceFavouritesViewModel @Inject constructor(
 
     private val _favourites: MutableStateFlow<PlacesListState> =
         MutableStateFlow(PlacesListState.empty())
-    val favourites: StateFlow<PlacesListState> = _favourites
+    val favourites: StateFlow<PlacesListState> = _favourites.onStart { getFavourites() }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = PlacesListState.empty()
         )
 
-    init {
-        @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
+    fun onChangePlaceFavouriteStatus(placeId: String) {
+        placesRepository.changePlaceFavouriteStatus(
+            placeId
+        ).onEach {
+            //handle error here, emit toast...
+            //if there is a real api call
+            //for local impl we are using there is no error possible
+        }.launchIn(viewModelScope)
+    }
+
+    fun onRetry() {
+        getFavourites()
+    }
+
+    private fun getFavourites() {
         placesRepository.getFavouritePlaces()
             .onEach {
                 _favourites.value = it.reducePage()
@@ -43,18 +57,6 @@ class PlaceFavouritesViewModel @Inject constructor(
             .launchIn(
                 scope = viewModelScope,
             )
-    }
-
-    fun onChangePlaceFavouriteStatus(placeId: String) {
-        placesRepository.changePlaceFavouriteStatus(
-            placeId
-        ).onEach {
-            //show message if failed
-        }.launchIn(viewModelScope)
-    }
-
-    fun onRetry() {
-
     }
 }
 

@@ -4,7 +4,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
-//index table for favourite places
+// table for favourite places
 @Entity(tableName = FavouritePlaceIdDb.ENTITY_NAME)
 data class FavouritePlaceIdDb(
     @PrimaryKey @ColumnInfo(name = ID) val id: String,

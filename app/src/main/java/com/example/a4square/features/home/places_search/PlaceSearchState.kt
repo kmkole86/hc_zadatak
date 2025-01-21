@@ -38,5 +38,3 @@ sealed class PlacesListState {
         override val nextPageCursor: String?,
     ) : PlacesListState()
 }
-
-//TODO @STABLE

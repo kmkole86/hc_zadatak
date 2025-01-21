@@ -99,7 +99,3 @@ fun PlaceDetailsDb.mapToLocal() =
         link = link,
         timeZone = timeZone
     )
-
-
-
-//s obzirom da se

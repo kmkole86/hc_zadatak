@@ -82,7 +82,9 @@ class PlaceSearchViewModel @Inject constructor(
         placesRepository.changePlaceFavouriteStatus(
             placeId
         ).onEach {
-            //show message if failed
+            //handle error here, emit toast...
+            //if there is a real api call
+            //for local impl we are using there is no error possible
         }.launchIn(viewModelScope)
     }
 
