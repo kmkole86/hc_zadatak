@@ -31,7 +31,6 @@ fun HomeScreen() {
                 title = {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center)
                     { Text("Aktiia zadatak", textAlign = TextAlign.Center) }
-
                 })
         },
         bottomBar = {

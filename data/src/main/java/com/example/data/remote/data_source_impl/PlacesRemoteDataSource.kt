@@ -6,6 +6,7 @@ import com.example.data.remote.common.ApiConstants.DEFAULT_PAGE_SIZE
 import com.example.data.remote.common.ApiConstants.LIMIT_PARAM_KEY
 import com.example.data.remote.common.ApiConstants.LINK_PARAM_KEY
 import com.example.data.remote.common.ApiConstants.QUERY_PARAM_KEY
+import com.example.data.remote.model.PlaceDetailsResponse
 import com.example.data.remote.model.PlacePageResponse
 import com.example.data.remote.model.PlacesSearchResponse
 import io.ktor.client.HttpClient
@@ -19,6 +20,8 @@ import javax.inject.Inject
 interface PlacesRemoteDataSource {
 
     suspend fun searchPlace(query: String, pageCursor: String?): Result<PlacePageResponse>
+
+    suspend fun getPlaceDetails(placeId: String): Result<PlaceDetailsResponse>
 }
 
 class PlacesRemoteDataSourceImpl @Inject constructor(private val client: HttpClient) :
@@ -38,13 +41,17 @@ class PlacesRemoteDataSourceImpl @Inject constructor(private val client: HttpCli
                     }
                 }
 
-                val cursorValue = result.headers.parseNextPageCursorOrNull()
-                val places = result.body<PlacesSearchResponse>().results
-
                 PlacePageResponse(
-                    places = places,
-                    nextPageCursor = cursorValue
+                    places = result.body<PlacesSearchResponse>().results,
+                    nextPageCursor = result.headers.parseNextPageCursorOrNull()
                 )
+            }
+        }
+
+    override suspend fun getPlaceDetails(placeId: String): Result<PlaceDetailsResponse> =
+        runCatchingCancelable {
+            coroutineScope {
+                client.get(placeId).body<PlaceDetailsResponse>()
             }
         }
 }

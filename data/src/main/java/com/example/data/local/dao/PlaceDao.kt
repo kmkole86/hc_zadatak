@@ -8,6 +8,8 @@ import com.example.data.local.model.FavouritePlaceIdDb
 import com.example.data.local.model.PlaceDb
 import com.example.data.local.model.PlaceDbSearchIndex
 import com.example.data.local.model.PlaceDbWithFavourite
+import com.example.data.local.model.PlaceDetailsDb
+import com.example.data.local.model.PlaceDetailsDbWithFavourite
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -15,7 +17,7 @@ interface PlaceDao {
 
     //favourites
     @Query("SELECT * from ${PlaceDb.ENTITY_NAME} as Place INNER JOIN ${FavouritePlaceIdDb.ENTITY_NAME} AS FavouriteId ON Place.id = FavouriteId.fav_id")
-    fun observeAllFavouritePlaces(): Flow<List<PlaceDb>>
+    fun observeFavourites(): Flow<List<PlaceDbWithFavourite>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertFavouriteId(placeId: FavouritePlaceIdDb)
@@ -39,4 +41,13 @@ interface PlaceDao {
     //places cache
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertPlaces(places: List<PlaceDb>)
+
+    //place details cache
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertPlaceDetails(place: PlaceDetailsDb)
+
+    //TODO OVDEEEEE vidi placeId ==placedetails.id AND place
+//    @Query("SELECT * from ${PlaceDetailsDb.ENTITY_NAME} as PlaceDetails INNER JOIN ${FavouritePlaceIdDb.ENTITY_NAME} AS FavouriteId ON Place.id = FavouriteId.fav_id")
+    @Query("SELECT * from (SELECT * FROM ${PlaceDetailsDb.ENTITY_NAME} WHERE ${PlaceDetailsDb.ID} =:placeId) as PlaceDetails LEFT JOIN ${FavouritePlaceIdDb.ENTITY_NAME} AS FavouriteId ON PlaceDetails.id = FavouriteId.fav_id LIMIT 1")
+    fun observePlaceDetails(placeId: String): Flow<PlaceDetailsDbWithFavourite?>
 }

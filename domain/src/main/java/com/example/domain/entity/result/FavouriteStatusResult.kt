@@ -1,7 +1,5 @@
 package com.example.domain.entity.result
 
-import com.example.domain.entity.Place
-
 sealed class FavouriteStatusResult {
     object FavouriteStatusLoading : FavouriteStatusResult()
     data class FavouriteStatusSuccess(val isFavourite: Boolean) : FavouriteStatusResult()

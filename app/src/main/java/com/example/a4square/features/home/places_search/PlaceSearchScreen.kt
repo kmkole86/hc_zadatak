@@ -35,6 +35,7 @@ fun PlaceSearchScreen(
     lazyListState.OnBottomReached {
         viewModel::loadNextPage.invoke()
     }
+
     Column(
         modifier = Modifier
             .fillMaxSize()

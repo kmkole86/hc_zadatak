@@ -1,13 +1,12 @@
 package com.example.a4square.features.home.place_details
 
-import com.example.domain.entity.result.FavouriteStatusResult
-import com.example.domain.entity.result.PlaceResult
+import androidx.compose.runtime.Stable
+import com.example.domain.entity.PlaceDetails
+import com.example.domain.entity.result.PlaceDetailsError
 
-data class PlaceDetailsState(
-    val place: PlaceResult? = null,
-    val favouriteStatus: FavouriteStatusResult? = null
-) {
-    companion object {
-        fun empty() = PlaceDetailsState()
-    }
+@Stable
+sealed class PlaceDetailsState {
+    object PlaceDetailsLoading : PlaceDetailsState()
+    data class PlaceDetailsSuccess(val placeDetails: PlaceDetails?) : PlaceDetailsState()
+    data class PlaceDetailsFailed(val error: PlaceDetailsError) : PlaceDetailsState()
 }

@@ -9,7 +9,7 @@ import androidx.room.PrimaryKey
 data class PlaceDb(
     @PrimaryKey @ColumnInfo(name = ID) val id: String,
     @ColumnInfo(name = NAME) val name: String,
-    @ColumnInfo(name = DISTANCE) val distance: Int,
+    @ColumnInfo(name = DISTANCE) val distance: Int?,
     @ColumnInfo(name = ICON_URL) val iconUrl: String?,
 ) {
 

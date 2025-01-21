@@ -8,13 +8,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 
-@Composable
-fun PlaceFavouritesScreen(onPlaceClicked: (String) -> Unit) {
-    Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-        Button(onClick = {
-            onPlaceClicked("fav")
-        }) {
-            Text("PlaceFavourites")
-        }
-    }
-}
+//@Composable
+//fun PlaceFavouritesScreen(onPlaceClicked: (String) -> Unit) {
+//    Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+//        Button(onClick = {
+//            onPlaceClicked("fav")
+//        }) {
+//            Text("PlaceFavourites")
+//        }
+//    }
+//}
